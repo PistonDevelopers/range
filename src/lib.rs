@@ -21,6 +21,14 @@ impl Range {
         }
     }
 
+    /// Creates an empty range with an offset.
+    pub fn empty(offset: usize) -> Range {
+        Range {
+            offset: offset,
+            length: 0,
+        }
+    }
+
     /// Returns true if range is empty
     pub fn is_empty(&self) -> bool {
         self.length == 0
