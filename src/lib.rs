@@ -1,19 +1,20 @@
 #![deny(missing_docs)]
+#![feature(hash)]
 
 //! A library for range addressing
 
 /// A representation of a range
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Show)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Range {
     /// The range offset
-    pub offset: uint,
+    pub offset: usize,
     /// The range length
-    pub length: uint
+    pub length: usize
 }
 
 impl Range {
     /// Creates a new `Range`
-    pub fn new(offset: uint, length: uint) -> Range {
+    pub fn new(offset: usize, length: usize) -> Range {
         Range {
             offset: offset,
             length: length,
@@ -26,7 +27,7 @@ impl Range {
     }
 
     /// Returns the next offset
-    pub fn next_offset(&self) -> uint {
+    pub fn next_offset(&self) -> usize {
         self.offset + self.length
     }
 }
