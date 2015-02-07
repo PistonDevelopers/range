@@ -38,5 +38,10 @@ impl Range {
     pub fn next_offset(&self) -> usize {
         self.offset + self.length
     }
+
+    /// Returns a range iterator.
+    pub fn iter(&self) -> std::ops::Range<usize> {
+        self.offset..self.offset + self.length
+    }
 }
 
