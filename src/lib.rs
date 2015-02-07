@@ -55,7 +55,7 @@ impl Range {
         if self.length < 2 * n {
             None
         } else {
-            Some(Range::new(self.offset + n, self.length - n))
+            Some(Range::new(self.offset + n, self.length - 2 * n))
         }
     }
 
