@@ -66,3 +66,14 @@ impl Range {
     }
 }
 
+/// The parent/child relationship for hierarchial contiguous arrays.
+/// Meant to be used by newtypes wrapping `Range` for type safety.
+pub trait ParentRange {
+    type Child;
+
+    /// Gets the immutable inner range.
+    fn range(&self) -> &Range;
+    /// Gets the mutable inner range.
+    fn range_mut(&mut self) -> &mut Range;
+}
+
