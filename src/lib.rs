@@ -71,6 +71,8 @@ impl Range {
 pub trait ParentRange {
     type Child;
 
+    /// Creates parent range from inner range.
+    fn from_range(range: Range) -> Self;
     /// Gets the immutable inner range.
     fn range(&self) -> &Range;
     /// Gets the mutable inner range.
