@@ -6,7 +6,9 @@
 /// A representation of a range
 ///
 /// The type parameter is used for extra type safety
-/// to avoid using a range for the wrong kind of object.
+/// to avoid using a range for the wrong kind of action.
+/// This can be a specific action to be performed on the range,
+/// for example `Range<AddTo<T>>`.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Range<T = ()> {
     /// The range offset
@@ -80,16 +82,3 @@ impl<T> Range<T> {
 
 /// Add range to object `T`.
 pub struct AddTo<T>;
-
-/// The parent/child relationship for hierarchial contiguous arrays.
-/// Meant to be used by newtypes wrapping `Range` for type safety.
-pub trait ParentRange {
-    type Child;
-
-    /// Creates parent range from inner range.
-    fn from_range(range: Range) -> Self;
-    /// Gets the immutable inner range.
-    fn range(&self) -> &Range;
-    /// Gets the mutable inner range.
-    fn range_mut(&mut self) -> &mut Range;
-}
