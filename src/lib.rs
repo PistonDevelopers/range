@@ -78,6 +78,9 @@ impl<T> Range<T> {
     }
 }
 
+/// Add range to object `T`.
+pub struct AddTo<T>;
+
 /// The parent/child relationship for hierarchial contiguous arrays.
 /// Meant to be used by newtypes wrapping `Range` for type safety.
 pub trait ParentRange {
