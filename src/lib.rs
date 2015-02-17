@@ -4,27 +4,39 @@
 //! A library for range addressing
 
 /// A representation of a range
+///
+/// The type parameter is used for extra type safety
+/// to avoid using a range for the wrong kind of object.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
-pub struct Range {
+pub struct Range<T = ()> {
     /// The range offset
     pub offset: usize,
     /// The range length
     pub length: usize
 }
 
-impl Range {
+impl<T> Range<T> {
     /// Creates a new `Range`
     #[inline(always)]
-    pub fn new(offset: usize, length: usize) -> Range {
+    pub fn new(offset: usize, length: usize) -> Range<T> {
         Range {
             offset: offset,
             length: length,
         }
     }
 
+    /// Casts a range into another type.
+    #[inline(always)]
+    pub fn cast<U>(self) -> Range<U> {
+        Range {
+            offset: self.offset,
+            length: self.length
+        }
+    }
+
     /// Creates an empty range with an offset.
     #[inline(always)]
-    pub fn empty(offset: usize) -> Range {
+    pub fn empty(offset: usize) -> Range<T> {
         Range {
             offset: offset,
             length: 0,
@@ -51,7 +63,7 @@ impl Range {
 
     /// Shrinks range at both ends with `n` items.
     #[inline(always)]
-    pub fn shrink_n(&self, n: usize) -> Option<Range> {
+    pub fn shrink_n(&self, n: usize) -> Option<Range<T>> {
         if self.length < 2 * n {
             None
         } else {
@@ -61,7 +73,7 @@ impl Range {
 
     /// Shrinks range at both ends with 1 item.
     #[inline(always)]
-    pub fn shrink(&self) -> Option<Range> {
+    pub fn shrink(&self) -> Option<Range<T>> {
         self.shrink_n(1)
     }
 }
@@ -78,4 +90,3 @@ pub trait ParentRange {
     /// Gets the mutable inner range.
     fn range_mut(&mut self) -> &mut Range;
 }
-
