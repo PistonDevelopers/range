@@ -1,7 +1,8 @@
 #![deny(missing_docs)]
-#![feature(hash)]
 
 //! A library for range addressing
+
+use std::marker::PhantomData;
 
 /// A representation of a range
 ///
@@ -14,7 +15,9 @@ pub struct Range<T = ()> {
     /// The range offset
     pub offset: usize,
     /// The range length
-    pub length: usize
+    pub length: usize,
+    /// Phantom type marker
+    phantom: PhantomData<T>,
 }
 
 impl<T> Range<T> {
@@ -24,6 +27,7 @@ impl<T> Range<T> {
         Range {
             offset: offset,
             length: length,
+            phantom: PhantomData,
         }
     }
 
@@ -32,7 +36,8 @@ impl<T> Range<T> {
     pub fn cast<U>(self) -> Range<U> {
         Range {
             offset: self.offset,
-            length: self.length
+            length: self.length,
+            phantom: PhantomData,
         }
     }
 
@@ -42,6 +47,7 @@ impl<T> Range<T> {
         Range {
             offset: offset,
             length: 0,
+            phantom: PhantomData,
         }
     }
 
@@ -81,4 +87,4 @@ impl<T> Range<T> {
 }
 
 /// Add range to object `T`.
-pub struct AddTo<T>;
+pub struct AddTo<T>(PhantomData<T>);
