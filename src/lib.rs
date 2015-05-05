@@ -84,7 +84,35 @@ impl<T> Range<T> {
     pub fn shrink(&self) -> Option<Range<T>> {
         self.shrink_n(1)
     }
+
+    /// Intersects a range with another.
+    pub fn intersect(&self, other: &Range<T>) -> Option<Range<T>> {
+        use std::cmp::{ min, max };        
+
+        if other.next_offset() <= self.offset ||
+           other.offset >= self.next_offset() {
+            None
+        } else {
+            let offset = max(self.offset, other.offset);
+            let length = min(self.next_offset(), other.next_offset())
+                - offset;
+            Some(Range::new(offset, length))
+        }
+    }
 }
 
 /// Add range to object `T`.
 pub struct AddTo<T>(PhantomData<T>);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn intersect() {
+        let a: Range = Range::new(2, 5);
+        let b = Range::new(5, 3);
+        let c = a.intersect(&b);
+        assert_eq!(c, Some(Range::new(5, 2)));
+    }
+}
