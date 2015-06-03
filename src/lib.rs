@@ -85,12 +85,27 @@ impl<T> Range<T> {
         self.shrink_n(1)
     }
 
-    /// Intersects a range with another.
+    /// Intersects a range with another, where ends are excluded.
     pub fn intersect(&self, other: &Range<T>) -> Option<Range<T>> {
         use std::cmp::{ min, max };        
 
         if other.next_offset() <= self.offset ||
            other.offset >= self.next_offset() {
+            None
+        } else {
+            let offset = max(self.offset, other.offset);
+            let length = min(self.next_offset(), other.next_offset())
+                - offset;
+            Some(Range::new(offset, length))
+        }
+    }
+    
+    /// Intersects a range with another, where ends are included.
+    pub fn ends_intersect(&self, other: &Range<T>) -> Option<Range<T>> {
+        use std::cmp::{ min, max };        
+
+        if other.next_offset() < self.offset ||
+           other.offset > self.next_offset() {
             None
         } else {
             let offset = max(self.offset, other.offset);
@@ -114,5 +129,15 @@ mod tests {
         let b = Range::new(5, 3);
         let c = a.intersect(&b);
         assert_eq!(c, Some(Range::new(5, 2)));
+    }
+    
+    #[test]
+    fn ends_intersect() {
+        let a: Range = Range::new(2, 3);
+        let b = Range::new(5, 3);
+        let c = a.ends_intersect(&b);
+        assert_eq!(c, Some(Range::new(5, 0)));
+        let c = b.ends_intersect(&a);
+        assert_eq!(c, Some(Range::new(5, 0)));
     }
 }
