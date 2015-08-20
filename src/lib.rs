@@ -116,9 +116,6 @@ impl<T> Range<T> {
     }
 }
 
-/// Add range to object `T`.
-pub struct AddTo<T>(PhantomData<T>);
-
 #[cfg(test)]
 mod tests {
     use super::*;
