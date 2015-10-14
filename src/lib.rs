@@ -112,6 +112,16 @@ impl<T> Range<T> {
         self.offset..self.offset + self.length
     }
 
+    /// Maps from some data to another.
+    #[inline(always)]
+    pub fn map<U, F: FnOnce(T) -> U>(self, f: F) -> Range<U> {
+        Range {
+            offset: self.offset,
+            length: self.length,
+            data: f(self.data)
+        }
+    }
+
     /// Unwraps the data.
     #[inline(always)]
     pub fn unwrap(self) -> T {
