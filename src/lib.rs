@@ -2,55 +2,98 @@
 
 //! A library for range addressing
 
-use std::marker::PhantomData;
-
 /// A representation of a range
 ///
-/// The type parameter is used for extra type safety
-/// to avoid using a range for the wrong kind of action.
-/// This can be a specific action to be performed on the range,
-/// for example `Range<AddTo<T>>`.
+/// The type parameter is used to wrap data related to the range.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Range<T = ()> {
     /// The range offset
     pub offset: usize,
     /// The range length
     pub length: usize,
-    /// Phantom type marker
-    phantom: PhantomData<T>,
+    /// The data described within the range.
+    pub data: T,
 }
 
-impl<T> Range<T> {
+impl Range {
     /// Creates a new `Range`
     #[inline(always)]
-    pub fn new(offset: usize, length: usize) -> Range<T> {
+    pub fn new(offset: usize, length: usize) -> Range {
         Range {
             offset: offset,
             length: length,
-            phantom: PhantomData,
+            data: (),
         }
     }
 
-    /// Casts a range into another type.
+    /// Wraps some data in the range.
     #[inline(always)]
-    pub fn cast<U>(self) -> Range<U> {
+    pub fn wrap<T>(self, data: T) -> Range<T> {
         Range {
             offset: self.offset,
             length: self.length,
-            phantom: PhantomData,
+            data: data,
         }
     }
 
     /// Creates an empty range with an offset.
     #[inline(always)]
-    pub fn empty(offset: usize) -> Range<T> {
+    pub fn empty(offset: usize) -> Range {
         Range {
             offset: offset,
             length: 0,
-            phantom: PhantomData,
+            data: (),
         }
     }
 
+    /// Shrinks range at both ends with `n` items.
+    #[inline(always)]
+    pub fn shrink_n(&self, n: usize) -> Option<Range> {
+        if self.length < 2 * n {
+            None
+        } else {
+            Some(Range::new(self.offset + n, self.length - 2 * n))
+        }
+    }
+
+    /// Shrinks range at both ends with 1 item.
+    #[inline(always)]
+    pub fn shrink(&self) -> Option<Range> {
+        self.shrink_n(1)
+    }
+
+    /// Intersects a range with another, where ends are excluded.
+    pub fn intersect(&self, other: &Range) -> Option<Range> {
+        use std::cmp::{ min, max };
+
+        if other.next_offset() <= self.offset ||
+           other.offset >= self.next_offset() {
+            None
+        } else {
+            let offset = max(self.offset, other.offset);
+            let length = min(self.next_offset(), other.next_offset())
+                - offset;
+            Some(Range::new(offset, length))
+        }
+    }
+
+    /// Intersects a range with another, where ends are included.
+    pub fn ends_intersect(&self, other: &Range) -> Option<Range> {
+        use std::cmp::{ min, max };
+
+        if other.next_offset() < self.offset ||
+           other.offset > self.next_offset() {
+            None
+        } else {
+            let offset = max(self.offset, other.offset);
+            let length = min(self.next_offset(), other.next_offset())
+                - offset;
+            Some(Range::new(offset, length))
+        }
+    }
+}
+
+impl<T> Range<T> {
     /// Returns true if range is empty
     #[inline(always)]
     pub fn is_empty(&self) -> bool {
@@ -69,49 +112,27 @@ impl<T> Range<T> {
         self.offset..self.offset + self.length
     }
 
-    /// Shrinks range at both ends with `n` items.
+    /// Unwraps the data.
     #[inline(always)]
-    pub fn shrink_n(&self, n: usize) -> Option<Range<T>> {
-        if self.length < 2 * n {
-            None
-        } else {
-            Some(Range::new(self.offset + n, self.length - 2 * n))
-        }
+    pub fn unwrap(self) -> T {
+        self.data
     }
 
-    /// Shrinks range at both ends with 1 item.
+    /// Decouples range and data.
     #[inline(always)]
-    pub fn shrink(&self) -> Option<Range<T>> {
-        self.shrink_n(1)
+    pub fn decouple(self) -> (Range, T) {
+        (Range { offset: self.offset, length: self.length, data: () },
+         self.data)
     }
+}
 
-    /// Intersects a range with another, where ends are excluded.
-    pub fn intersect(&self, other: &Range<T>) -> Option<Range<T>> {
-        use std::cmp::{ min, max };        
-
-        if other.next_offset() <= self.offset ||
-           other.offset >= self.next_offset() {
-            None
-        } else {
-            let offset = max(self.offset, other.offset);
-            let length = min(self.next_offset(), other.next_offset())
-                - offset;
-            Some(Range::new(offset, length))
-        }
-    }
-    
-    /// Intersects a range with another, where ends are included.
-    pub fn ends_intersect(&self, other: &Range<T>) -> Option<Range<T>> {
-        use std::cmp::{ min, max };        
-
-        if other.next_offset() < self.offset ||
-           other.offset > self.next_offset() {
-            None
-        } else {
-            let offset = max(self.offset, other.offset);
-            let length = min(self.next_offset(), other.next_offset())
-                - offset;
-            Some(Range::new(offset, length))
+impl<T> From<(Range, T)> for Range<T> {
+    #[inline(always)]
+    fn from((r, d): (Range, T)) -> Range<T> {
+        Range {
+            offset: r.offset,
+            length: r.length,
+            data: d
         }
     }
 }
@@ -127,7 +148,7 @@ mod tests {
         let c = a.intersect(&b);
         assert_eq!(c, Some(Range::new(5, 2)));
     }
-    
+
     #[test]
     fn ends_intersect() {
         let a: Range = Range::new(2, 3);
