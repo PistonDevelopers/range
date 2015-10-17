@@ -122,6 +122,16 @@ impl<T> Range<T> {
         }
     }
 
+    /// Returns range information without the data.
+    #[inline(always)]
+    pub fn range(&self) -> Range {
+        Range {
+            offset: self.offset,
+            length: self.length,
+            data: ()
+        }
+    }
+
     /// Unwraps the data.
     #[inline(always)]
     pub fn unwrap(self) -> T {
